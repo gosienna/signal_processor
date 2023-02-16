@@ -233,6 +233,7 @@ function fileclicked(btn){
             fields: 'webContentLink,id,mimeType'
         }).then(function (response) {
             let filetype = response.result.mimeType
+            console.log(filetype)
             if (filetype === "application/vnd.google-apps.folder"){ //if the item being click is a folder
                 openfolder(fileId) //open up the target folder 
             }
@@ -240,6 +241,7 @@ function fileclicked(btn){
                 showCSV(fileId)
             }
             else{
+                showEDF(fileId)
                 alert("can only open file in csv format")
             }
             console.log(response)
@@ -273,6 +275,20 @@ function openfolder(folderId){
         }
     })
 }
+
+function showEDF(fileId){
+    gapi.client.drive.files.get({
+        // get parent folder id from localstorage
+        fileId: fileId,
+        alt: 'media'
+    }).then(function (response) {
+        enc = new TextEncoder()
+        edf_unit8 = enc.encode(response.body)
+        let edf = new EDF(edf_unit8)
+        console.log(edf)
+    })
+}
+
 
 function showCSV(fileId){
     gapi.client.drive.files.get({
