@@ -14,12 +14,15 @@ let SCOPES = 'https://www.googleapis.com/auth/drive';
 let signinButton = document.getElementById('btn_sign_in')
 let signoutButton = document.getElementById('btn_sign_out')
 let pickButton = document.getElementById('btn_pick_folder')
+let hideButton = document.getElementById('btn_hide_folder')
+let showLoading = document.getElementById('showLoading')
 signoutButton.style.display = 'none'
 pickButton.style.display = 'none'
+hideButton.style.display = 'none'
+showLoading.style.display = 'none'
 var listcontainer = document.getElementById("listFolder") //container showing content of a folder
 // var showfileButton = document.getElementById('btn_show_files')
 // showfileButton.style.display = 'none'
-let tokenClient;
 let gapiInited = false;
 let gisInited = false;
 let accessToken = null;
@@ -44,9 +47,9 @@ async function initializeGapiClient() {
 
 //create google picker for folder choosing, the pickerCallback will return the folderID and trigger next move
 function createPicker() {
-
+    console.log('createPicker!')
     const showPicker = () => {
-        let view = new google.picker.DocsView(google.picker.ViewId.FOLDERS)
+        let view = new google.picker.DocsView(google.picker.ViewId.DOCS)
                         .setIncludeFolders(true)
                         .setSelectFolderEnabled(true)
                         .setLabel ("~Choose your data folder~")
@@ -76,7 +79,6 @@ function createPicker() {
       tokenClient.requestAccessToken({prompt: 'consent'});
     } else {
       // Skip display of account chooser and consent dialog for an existing session.
-      tokenClient.requestAccessToken({prompt: ''});
       showPicker()
     }
 }
@@ -113,6 +115,7 @@ function maybeEnableButtons() {
 
 signinButton.onclick = () => handleAuthClick()
 function handleAuthClick() {
+    console.log('handdleAuthClick!')
     tokenClient.callback = async (response) => {
         if (response.error !== undefined) {
             throw (resp);
@@ -133,7 +136,11 @@ function handleAuthClick() {
     if (accessToken === null) {
         tokenClient.requestAccessToken({ prompt: 'consent' });
     } else {
-        tokenClient.requestAccessToken({ prompt: '' });
+        if (dataFolderID !== null){ 
+            showFolderContent()
+        }else{
+            createPicker()
+        }
     }
 }
 
@@ -154,58 +161,60 @@ pickButton.onclick = () => createPicker()
 function showFolderContent(){
     let dataFolderID = localStorage.getItem('dataFolderID')
     gapi.client.drive.files.list({
-        // get parent folder id from localstorage
-        'q': `parents in "${dataFolderID}"`
+        'pageSize': 1000,
+        'q':  `'${dataFolderID}' in parents`
     }).then(function (response) {
-        var files = response.result.files;
+        console.log(response)
+        let files = response.result.files;
         if (files && files.length > 0) {
-            let fileContent = document.getElementById('folder_content')
-            fileContent.innerHTML = '';
+            let folderContent = document.getElementById('folderContent')
+            folderContent.innerHTML = ''
+            
             for (var i = 0; i < files.length; i++) {
-                fileContent.innerHTML += `
+                folderContent.innerHTML += `
+                <button class="btn btn-secondary btn-sm" onclick="loadData(this)" data-fileId="${files[i].id}">${files[i].name}</button>
+                `
+            }  
+            hideButton.style.display = 'block'
 
-                <div class="list-group-item list-group-item-action fs-6">
-                    <button class="btn btn-secondary btn-sm btnlist-group-item list-group-item-action active " onclick="loadData(this)" data-fileId="${files[i].id}">${files[i].name}</button>
-                </div>
-
-                `;
-            }
         } else {
-            listcontainer.innerHTML = '<div style="text-align: center;">No Files</div>'
+            folderContent.innerHTML = '<div style="text-align: center;">No Files</div>'
         }
     })
 }
 
 //function to load data
 function loadData(btn){
-    let fileId = btn.getAttribute("data-fileId")    
-        gapi.client.drive.files.get({
-                fileId: fileId,
-                fields: 'webContentLink,id,name,mimeType',
-            }).then(function (response) {
-                let filetype = response.result.mimeType
-                let file_ext = response.result.name.split('.').pop()
-                let fileName = response.result.name
-                if (filetype === "application/vnd.google-apps.folder"){ //if the item being click is a folder
-                    alert("This is a folder!")
-                    openfolder(fileId) //open up the target folder 
-                }
-                else if(filetype === "text/csv"){
-                    alert("This is a csv file!")
-                }
-                else if((filetype === "application/octet-stream") && (file_ext === 'edf')){
-                    loadEDF(fileId, fileName)
-
-                }
-            })
+    let fileId = btn.getAttribute("data-fileId")  
+    gapi.client.drive.files.get({
+            fileId: fileId,
+            fields: 'webContentLink,id,name,mimeType',
+        }).then(function (response) {
+            let filetype = response.result.mimeType
+            let file_ext = response.result.name.split('.').pop()
+            let fileName = response.result.name
+            if (filetype === "application/vnd.google-apps.folder"){ //if the item being click is a folder
+                alert("This is a folder!")
+                openfolder(fileId) //open up the target folder 
+            }
+            else if(filetype === "text/csv"){
+                alert("This is a csv file!")
+            }
+            else if((filetype === "application/octet-stream") && (file_ext === 'edf')){
+                showLoading.style.display = 'flex'
+                loadEDF(fileId, fileName) 
+            }
+        })
 }
 
 //load edf file into localstorage of browser
 function loadEDF(fileId, fileName){
+    console.log('loadEDF')
     gapi.client.drive.files.get({
         fileId: fileId,
         alt: 'media'
     }).then(function (response) {
+        showLoading.style.display = 'none' 
         enc = new TextEncoder()
         edf_unit8 = enc.encode(response.body)
         let edf = new EDF(edf_unit8)
@@ -249,37 +258,6 @@ function upload() {
         });
     }
 }
-
-
-// function showRootFolder() {
-//     gapi.client.drive.files.list({
-//         'q' : `'root' in parents`
-//     }).then(function (response) {
-//         let files = response.result.files;
-//         if (files && files.length > 0) {
-//             listcontainer.innerHTML = '';
-//             for (var i = 0; i < files.length; i++) {
-//                 listcontainer.innerHTML += `
-
-//                 <div class="list-group-item list-group-item-action">
-//                     <div class ="d-flex justify-content-between">
-//                         <span>${files[i].name}</span>
-//                         <button class="btn btn-primary" onclick="fileclicked(this)" data-fileId="${files[i].id}">Open</button>
-//                     </div>
-//                 </div>
-
-//                 `
-//             }
-//         } else {
-//             listcontainer.innerHTML = '<div style="text-align: center;">No Files</div>'
-//         }
-       
-        
-//     })
-// }
-
-
-
 
 
 function showCSV(fileId){
