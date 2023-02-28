@@ -8,53 +8,63 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
 </head>
 <body>
-    <!-- <div class="header">
-        <div class="title">Show signal data</div>
-        <div class="auth-buttons">
-            <button class="signin">Sign In</button>
-            <button class="signout">Sign Out</button>
+    
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand mx-1 border px-2 rounded">Signal Processor</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active d-flex">
+                <button id="btn_sign_in"  class="btn btn-primary mx-1 my-1">Sign In</button>
+                <button id="btn_sign_out" class="btn btn-secondary mx-1 my-1">Sign Out</button>
+                <button id="btn_pick_folder" class="btn btn-warning mx-1 my-1">Pick your data folder</button>
+            </li>
+            <!-- <li class="nav-item">
+              <a class="nav-link" href="#">Link</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Dropdown
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#">Something else here</a>
+              </div>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" href="#">Disabled</a>
+            </li>
+          </ul> -->
+          <!-- <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          </form> -->
         </div>
-    </div> -->
-
-    <div>
-        <div class="d-flex">
-            <button id="btn_sign_in"  class="btn btn-primary mx-1 my-1">Sign In</button>
-            <button id="btn_sign_out" class="btn btn-secondary mx-1 my-1">Sign Out</button>
-            <!-- <button id="btn_show_files">Show files</button> -->
+    </nav>
+    
+    <div class="row">
+        <div class="col-md-2">
+            <div id = "folder_content" class="d-flex flex-column list-group">
+                <span> Your Files </span> 
+            </div>
+        </div>
+        <div id = "signal_display" class="col border">
+            signal_display
         </div>
     </div>
+    
 
-    <!-- <div class="actions">
-        <textarea placeholder="Enter text here ..."></textarea>
-        <button class="upload" onclick="upload()">Backup</button>
-    </div> -->
-
-    <div class="w-90 d-flex justify-content-center">
-        <span class="fs-1"> Your Files </span> 
-
-    </div>
-    <!-- <div class="list">
-        <ul>
-            <div style="text-align: center;">Sign In First</div>
-        </ul>
-    </div> -->
-    <div id="listFolder" class="list-group">
-       
-    </div>
-
-    <div class="expand-container" style="display: none;">
-        <ul>
-            <li onclick="readEditDownload(this, 'read')">Read</li>
-            <li onclick="readEditDownload(this, 'edit')">Edit</li>
-            <li onclick="readEditDownload(this, 'download')">Download</li>
-            <li onclick="deleteFile(this)">Delete</li>
-        </ul>
-    </div>
+    
 
     <script src="script.js"></script>
     <script src="edf.js"></script>
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://accounts.google.com/gsi/client"></script>
+    <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
     <!-- load bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
