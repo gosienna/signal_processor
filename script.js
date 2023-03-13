@@ -1,35 +1,38 @@
-// this source code used updated google sign in options 
-// after the previous button is deprecated
-window.onload = () => {
-    gapiLoaded()
-    gisLoaded()
-}
-
-
+//variable for google api
 let CLIENT_ID = '170126668191-bcrse0te9km60a43b9pvnfo2o1jjfm2j.apps.googleusercontent.com';
 let API_KEY = 'AIzaSyCuIIugSuCK1F2LORGG4-Z2IcQwyPNFKA8';
 let DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
-
 let SCOPES = 'https://www.googleapis.com/auth/drive';
+let gapiInited = false;
+let gisInited = false;
+let accessToken = null;
+
+//manage appearance of button
 let signinButton = document.getElementById('btn_sign_in')
 let signoutButton = document.getElementById('btn_sign_out')
 let pickButton = document.getElementById('btn_pick_folder')
 let hideButton = document.getElementById('btn_hide_folder')
+let saveButton = document.getElementById('btn_save_edf')
 let showLoading = document.getElementById('showLoading')
 signoutButton.style.display = 'none'
 pickButton.style.display = 'none'
 hideButton.style.display = 'none'
+saveButton.style.display = 'none'
 showLoading.style.display = 'none'
-var listcontainer = document.getElementById("listFolder") //container showing content of a folder
-// var showfileButton = document.getElementById('btn_show_files')
-// showfileButton.style.display = 'none'
-let gapiInited = false;
-let gisInited = false;
-let accessToken = null;
+
+//initialization
+window.onload = () => {
+    gapiLoaded()
+    gisLoaded()
+    openDB()
+}
+
+
+saveButton.onclick = () => addEdf()
+
 function gapiLoaded() {
     gapi.load('client', initializeGapiClient)
     gapi.load('picker', onPickerApiLoad)
-
 }
 
 function onPickerApiLoad() {
@@ -115,7 +118,6 @@ function maybeEnableButtons() {
 
 signinButton.onclick = () => handleAuthClick()
 function handleAuthClick() {
-    console.log('handdleAuthClick!')
     tokenClient.callback = async (response) => {
         if (response.error !== undefined) {
             throw (resp);
@@ -157,6 +159,8 @@ function handleSignoutClick() {
 
 pickButton.onclick = () => createPicker()
 
+
+
 //open folder and show content in listcontainer
 function showFolderContent(){
     let dataFolderID = localStorage.getItem('dataFolderID')
@@ -164,16 +168,18 @@ function showFolderContent(){
         'pageSize': 1000,
         'q':  `'${dataFolderID}' in parents`
     }).then(function (response) {
-        console.log(response)
         let files = response.result.files;
         if (files && files.length > 0) {
             let folderContent = document.getElementById('folderContent')
             folderContent.innerHTML = ''
             
             for (var i = 0; i < files.length; i++) {
-                folderContent.innerHTML += `
-                <button class="btn btn-secondary btn-sm" onclick="loadData(this)" data-fileId="${files[i].id}">${files[i].name}</button>
-                `
+                let file_name = files[i].name
+                if (file_name.split('.')[1] === 'edf'){
+                    folderContent.innerHTML += `
+                    <button class="btn btn-secondary btn-sm mt-1 ml-1" onclick="loadData(this)" data-fileId="${files[i].id}">${files[i].name}</button>
+                    `
+                }
             }  
             hideButton.style.display = 'block'
 
@@ -218,8 +224,8 @@ function loadEDF(fileId, fileName){
         enc = new TextEncoder()
         edf_unit8 = enc.encode(response.body)
         let edf = new EDF(edf_unit8)
-        localStorage.setItem(fileName,response.body)
-        console.log(response)
+        edf.id = fileName
+        addEdf(edf)
     })
 }
 
