@@ -229,3 +229,5 @@ class EDF
 	
 	
 }
+
+export {EDF}

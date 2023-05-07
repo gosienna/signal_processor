@@ -1,3 +1,6 @@
+import {initIndexedDB, addEdfToDB} from './indexedDB.js'
+import {EDF} from './edf.js'
+
 //code for initialization of gapi, load google drive or existing data in indexedDB
 
 class Model{
@@ -12,33 +15,12 @@ class Model{
         this.tokenClient = null
         this.pickerInited = false
         this.clientInited = false
-        
-        this.initIndexedDB("myDatabase", "edf", 1)
+        this.dbName = 'edfDatabase'
+        this.storeName = 'edf'
+        this.dbversion = 1
+        this.db = initIndexedDB(this.dbName, this.storeName, this.dbversion)
     }
-
-    initIndexedDB(dbName, storeName, version){
-        console.log('initIndexedDB')
-        const openRequest = indexedDB.open(dbName, version);
-
-        openRequest.onupgradeneeded = (event) => {
-        const db = event.target.result;
-        // Create an empty object store
-        if (!db.objectStoreNames.contains(storeName)) {
-            const objectStore = db.createObjectStore(storeName, { keyPath: "id", autoIncrement: true });
-        }
-        };
-
-        openRequest.onerror = (event) => {
-        console.error("Error opening database:", event.target.errorCode);
-        };
-
-        openRequest.onsuccess = (event) => {
-            const db = event.target.result;
-            this.db = db
-            console.log("Database opened successfully, empty object store created");
-        }
-                
-    } 
+    
 }
 
 class View{
@@ -56,7 +38,6 @@ class View{
         this.hideButton.style.display = 'none'
         this.saveButton.style.display = 'none'
         this.showLoading.style.display = 'none'
-
     }
 }
 
@@ -204,7 +185,7 @@ class Controller{
             }
         })
     }
-
+    //load data from google drive
     loadData(event){
         let self = this
         console.log('loadData')
@@ -228,24 +209,24 @@ class Controller{
     }
     //loadEDF file to the indexedDB
     loadEDF(fileId, fileName){
-        let self = this
+        let dbName = this.model.dbName
+        let storeName = this.model.storeName
+        let dbversion = this.model.dbversion
+        let view = this.view
         console.log('loadEDF')
         gapi.client.drive.files.get({
             fileId: fileId,
             alt: 'media'
         }).then(function (response) {
-            self.view.showLoading.style.display = 'none' 
+            view.showLoading.style.display = 'none' 
             let enc = new TextEncoder()
             let edf_unit8 = enc.encode(response.body)
             let edf = new EDF(edf_unit8)
-            self.updateEDF(edf, fileName)
-            console.log(edf)
+            addEdfToDB(dbName, dbversion, storeName, {"id":fileName, 'edf':edf}) //use fileName as id
         })
     }
 
-    updateEDF(edf, fileName){
-        
-    }
+
 
 }
 //=========================initialized the app=========================

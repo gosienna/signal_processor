@@ -1,54 +1,64 @@
 
-const dbName = 'edfDatabase'
-const dbVersion = 1
-function openDB(){
 
-    // Open a connection to the database
-    const request = indexedDB.open(dbName, dbVersion);
+function initIndexedDB(dbName, storeName, version){
+    console.log('initIndexedDB')
+    let db
+    const openRequest = indexedDB.open(dbName, version);
 
-    // Create the object stores when upgrading the database version
-    request.onupgradeneeded = event => {
-        const db = event.target.result;
-        
-        // Create an object store named "users" with an auto-incrementing key
-        const usersStore = db.createObjectStore("edf", { keyPath: "id" });
-        console.log(db)
+    openRequest.onupgradeneeded = (event) => {
+    db = event.target.result;
+    // Create an empty object store if object store doesn't exist
+    if (!db.objectStoreNames.contains(storeName)) {
+        const objectStore = db.createObjectStore(storeName, { keyPath: "id", autoIncrement: true });
+    }
     };
 
-        // Handle errors when opening the database
-    request.onerror = event => {
-        console.log("Error opening database:", event.target.error);
+    openRequest.onerror = (event) => {
+    console.error("Error opening database:", event.target.errorCode);
     };
 
-    // Handle success when opening the database
-    request.onsuccess = event => {
-        const db = event.target.result;
+    openRequest.onsuccess = (event) => {
         document.getElementById('btn_save_edf').style.display = 'block'
+        console.log("Database opened successfully, empty object store created");
+    }
+    return db      
+} 
+
+function addEdfToDB(dbName, version, storeName, data){
+    console.log(version)
+    const request = indexedDB.open(dbName, version);
+
+    request.onerror = (event) => {
+        console.error('Failed to open database:', event.target.error);
+        };
+
+    request.onupgradeneeded = (event) => {
+    const db = event.target.result;
+
     };
+
+    request.onsuccess = (event) => {
+    const db = event.target.result;
+
+    let transaction = db.transaction(storeName, "readwrite")
     
+    transaction.onerror = function(event) {
+        console.log("Error adding data to the object store:", event.target.error);
+      }
+    
+    let objectStore = transaction.objectStore(storeName);
+    let addrequest = objectStore.add(data)
+
+    addrequest.onsuccess = function(event) {
+        console.log("Data added to the object store.");
+    }
+
+    transaction.oncomplete = function(event) {
+        alert("All done!");
+      }
+
+    };
+
 }
 
-function addEdf(data){
-    const request = indexedDB.open(dbName);
-    // Handle errors when opening the database
-    request.onerror = event => {
-        console.log("Error opening database:", event.target.error);
-    };
-    
-    // Handle success when opening the database
-    request.onsuccess = event => {
-        const db = event.target.result;
-        
-        // Create a transaction to read data from the "users" object store
-        const transaction = db.transaction("edf", "readwrite")
-        const objectStore = transaction.objectStore("edf");
-        const addrequest = objectStore.add(data)
-        addrequest.onerror = event => {
-            console.log("Error adding data to the object store:", event.target.error);
-        };
-        addrequest.onsuccess = event => {
-            console.log("Data added to the object store.");
-        };
-        
-    };
-}
+export {initIndexedDB, addEdfToDB}
