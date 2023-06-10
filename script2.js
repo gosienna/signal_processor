@@ -1,4 +1,4 @@
-import {initIndexedDB, addEdfToDB} from './indexedDB.js'
+import {initIndexedDB, addEdfToDB, getEdfFromDB} from './indexedDB.js'
 import {EDF} from './edf.js'
 
 //code for initialization of gapi, load google drive or existing data in indexedDB
@@ -18,7 +18,15 @@ class Model{
         this.dbName = 'edfDatabase'
         this.storeName = 'edf'
         this.dbversion = 1
-        this.db = initIndexedDB(this.dbName, this.storeName, this.dbversion)
+        initIndexedDB(this.dbName, this.storeName, this.dbversion)
+        // read the edf from the indexedDB
+        getEdfFromDB(this.dbName, this.storeName, this.dbversion, 1).then(result => {
+            this.edf = result
+        })
+        .catch(error => {
+            console.error(error);
+        });
+
     }
     
 }
@@ -70,6 +78,9 @@ class Controller{
 
         //bind class functions to loadData function
         this.loadData = this.loadData.bind(this)
+
+        //load data from indexedDB
+
    
     }
 
