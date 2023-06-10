@@ -38,7 +38,7 @@ class View{
         this.signoutButton = document.getElementById('btn_sign_out')
         this.pickButton = document.getElementById('btn_pick_folder')
         this.hideButton = document.getElementById('btn_hide_folder')
-        this.saveButton = document.getElementById('btn_save_edf')
+        // this.saveButton = document.getElementById('btn_save_edf')
         this.showLoading = document.getElementById('showLoading')
         this.signinButton.style.display = 'none'
         this.signoutButton.style.display = 'none'

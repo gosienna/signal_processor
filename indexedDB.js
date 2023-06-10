@@ -13,7 +13,6 @@ function initIndexedDB(dbName, storeName, version){
             console.log("Creating empty object store!");
             const objectStore = db.createObjectStore(storeName, { autoIncrement: true });
         }
-        document.getElementById('btn_save_edf').style.display = 'block'
     };
 
     openRequest.onerror = (event) => {
