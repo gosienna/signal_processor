@@ -10,44 +10,58 @@
     <!--load gapi--> 
     <script src="https://apis.google.com/js/api.js"></script>
     <script src="https://accounts.google.com/gsi/client"></script>
+    <style>
+      #slider{
+        -webkit-appearance: none;
+        background: #bde3ff;
+      }
+    </style>
   </head>
 <body>
-    
+
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand mx-1 border px-2 rounded">Signal Processor</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
         <li class="nav-item active d-flex" style="max-height: 200px; overflow: auto;">
           <button id="btn_sign_in"  class="btn btn-primary mx-1 my-1">Sign In</button>
           <button id="btn_sign_out" class="btn btn-secondary mx-1 my-1">Sign Out</button>
           <button id="btn_pick_folder" class="btn btn-warning mx-1 my-1">Pick your data folder</button>
           <button id="btn_hide_folder" class="btn btn-warning mx-1 my-1" data-bs-toggle="collapse" data-bs-target="#folderContent" aria-expanded="false" aria-controls="folderContent">Hide folder</button>
-          <!-- <button id="btn_save_edf" class="btn btn-warning mx-1 my-1">Save Edf</button> -->
         </li>
     </nav>
-    
- 
-    <div id="folderContent" class="collapse show" style="max-height: 50vh; overflow: auto;">
+  
+    <div id="folderContent" class="collapse show" style="max-height: 50vh">
     </div>
+
+    <input type="range" id="slider">
+    <canvas id="canvas_ecg" ></canvas>
+    <select id="window_select" aria-label="Default select example">
+      <option value="10" selected>Window Size : 10s</option>
+      <option value="30">Window Size : 30s</option>
+      <option value="60">Window Size : 60s</option>
+      <option value="300">Window Size : 300s</option>
+    </select>
+    <select id="scale_select" aria-label="Default select example">
+      <option value="0.5">Scale : 50% </option>
+      <option value="0.8">Scale : 80% </option>
+      <option value="1.0" selected>Scale : 100% </option>
+      <option value="1.2">Scale : 120% </option>
+      <option value="1.5">Scale : 150% </option>
+      <option value="2.0">Scale : 200% </option>
+    </select>
     
     <div id = "showLoading" style="display: flex; align-items: center; justify-content:center; height:80vh">
         <i id="i_loading" class="fas fa-circle-notch fa-spin icon-lg" style="font-size: 5rem"></i>
     </div>
-
     
-  
-    
-
-    
-    
-    <script type="module" src="script2.js"></script>
+    <script src="edfdecoder.umd.js"></script>
     <script type="module" src="indexedDB.js"></script>
-    <script type="module" src="edf.js"></script>
+    <script type="module" src="script.js"></script>
+    
+    
 
   
     <!-- load bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-    <script src="papaparse.min.js"></script>
+    <script src="papaparse.js"></script>
 </body>
 </html>

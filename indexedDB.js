@@ -11,7 +11,7 @@ function initIndexedDB(dbName, storeName, version){
         // Create an empty object store if object store doesn't exist
         if (!db.objectStoreNames.contains(storeName)) {
             console.log("Creating empty object store!");
-            const objectStore = db.createObjectStore(storeName, { autoIncrement: true });
+            const objectStore = db.createObjectStore(storeName, { autoIncrement: false });
         }
     };
 
@@ -26,8 +26,8 @@ function initIndexedDB(dbName, storeName, version){
 } 
 
 
-function addEdfToDB(dbName, version, storeName, data){
-    console.log('addEdfToDB',dbName, version, storeName)
+function putCSVToDB(dbName, version, storeName, data, key){
+    console.log('addCSVToDB',dbName, version, storeName)
     const request = indexedDB.open(dbName, version);
 
     request.onerror = (event) => {
@@ -48,7 +48,7 @@ function addEdfToDB(dbName, version, storeName, data){
     }
     
     let objectStore = transaction.objectStore(storeName);
-    let addrequest = objectStore.add(data)
+    let addrequest = objectStore.put(data, key)
 
     addrequest.onsuccess = function(event) {
         console.log("Data added to the object store.");
@@ -62,8 +62,8 @@ function addEdfToDB(dbName, version, storeName, data){
 
 }
 
-function getEdfFromDB(dbName, storeName, version, id){
-    console.log('getEdfToDB',dbName, version, storeName)
+function getCSVFromDB(dbName, storeName, version, id){
+    console.log('getCSVToDB',dbName, version, storeName)
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(dbName, version);
 
@@ -91,7 +91,7 @@ function getEdfFromDB(dbName, storeName, version, id){
             if (!event.target.result) {
                 reject("No data found");
             } else {
-                resolve(event.target.result);
+                resolve(event.target.result); //return the csv string
             }
         }
 
@@ -106,4 +106,4 @@ function getEdfFromDB(dbName, storeName, version, id){
 }
 
 
-export {initIndexedDB, addEdfToDB, getEdfFromDB}
+export {initIndexedDB, putCSVToDB, getCSVFromDB}

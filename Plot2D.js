@@ -3,17 +3,21 @@ import {OrbitControls} from './jsm/controls/OrbitControls.js'
 export {Plot2D}
 //------------------------------------function code area----------------------------------
 class Plot2D{
-    init(data,canvasID) {
+    init(data,canvasID, w, h) {
         this.canvasID = canvasID
         this.data = data
+        
         //console.log(data)
         //----------------------setup camera----------------------
         
         //set default data display range is all the data set
         this.xmax = data.length
+        this.display_range = [0, data.length]
         this.xmin = 0
-        this.ymax=Math.max(...data)
-        this.ymin=Math.min(...data)
+        // this.ymax=Math.max(...data)
+        // this.ymin=Math.min(...data)
+        this.ymax = data.reduce((max, current) => Math.max(max, current), -Infinity)
+        this.ymin = data.reduce((min, current) => Math.min(min, current), Infinity)
         
         let camera = new THREE.OrthographicCamera(this.xmin, this.xmax, this.ymin, this.ymax, -10000, 10000)
         this.camera = camera
@@ -25,7 +29,7 @@ class Plot2D{
         renderer.setPixelRatio( 1 );
 
         //set the canvas size in the web for displaying the data
-        renderer.setSize( 800, 150);
+        renderer.setSize( w, h);
 
         document.body.appendChild( renderer.domElement );
         this.renderer = renderer
@@ -41,8 +45,6 @@ class Plot2D{
         scene.background = new THREE.Color( 0xFFFFFFF ); // setup background color
         //let scene can be accessble
         this.scene=scene
-
-
 
         //-----------------------draw data--------------------
         this.draw_data(data)
@@ -194,7 +196,10 @@ class Plot2D{
             this.scene.remove(this.scene.children[0])
         }
         
-        
     }
-    
+    update_displayRange(start, end){
+        this.camera.left = start
+        this.camera.right = end
+        this.camera.updateProjectionMatrix()
+    }
 }
