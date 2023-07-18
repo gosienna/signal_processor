@@ -1,4 +1,4 @@
-import {initIndexedDB, putCSVToDB, getCSVFromDB} from './indexedDB.js'
+import {initIndexedDB, putDataToDB, getDataFromDB} from './indexedDB.js'
 import { Plot2D } from './Plot2D.js';
 var decoder = new edfdecoder.EdfDecoder();
 console.log(decoder)
@@ -16,8 +16,8 @@ class Model{
         this.tokenClient = null
         this.pickerInited = false
         this.clientInited = false
-        this.dbName = 'CSVDatabase'
-        this.storeName = 'ecgStore'
+        this.dbName = 'edfDB'
+        this.storeName = 'edfStore'
         this.id = ""
         this.dbversion = 1
         this.plot_ecg = new Plot2D()
@@ -87,19 +87,20 @@ class Controller{
         this.loadData = this.loadData.bind(this)
         
         //check if there is ecg data in indexedDB
-        getCSVFromDB(this.model.dbName, this.model.storeName, this.model.dbversion, 1)
+        getDataFromDB(this.model.dbName, this.model.storeName, this.model.dbversion, 1)
             .then((data) => {
                 alert('Found data from indexedDB')
                 this.view.showLoading.style.display = 'flex';
                 setTimeout(() => {
-                    Papa.parse(data.csv, {
-                        complete: (parsedData) => {
-                        this.model.ecg = parsedData.data.map(parseFloat);
-                        this.model.id = data.id;
-                        this.plotECG();
-                        this.view.showLoading.style.display = 'none';
-                        }
-                    });
+                    console.log(data)
+                    // Papa.parse(data.csv, {
+                    //     complete: (parsedData) => {
+                    //     this.model.ecg = parsedData.data.map(parseFloat);
+                    //     this.model.id = data.id;
+                    //     this.plotECG();
+                    //     this.view.showLoading.style.display = 'none';
+                    //     }
+                    // })
                 }, 0);
             }).catch((err) => {
                 alert(err)
@@ -267,13 +268,17 @@ class Controller{
                 alert("This is a csv file!")
                 self.view.showLoading.style.display = 'flex'
                 self.loadCSV(fileId, fileName)
+            }else  if(file_ext === "edf"){
+                alert("This is a edf file!")
+                self.view.showLoading.style.display = 'flex'
+                self.loadEDF(fileId, fileName)
             }
         })
     }
     //load CSV file to the indexedDB
     loadCSV(fileId, fileName){
-        let dbName = this.model.dbName
-        let storeName = this.model.storeName
+        this.model.dbName = "csvDB"
+        this.model.storeName = "csvStore"
         let dbversion = this.model.dbversion
         let view = this.view
         console.log('loadCSV')
@@ -282,9 +287,27 @@ class Controller{
             alt: 'media'
         }).then(function (response) {
             view.showLoading.style.display = 'none' 
-            putCSVToDB(dbName, dbversion, storeName, {"id":fileName, 'csv':response.body}, 1) //use fileName as id
+            putDataToDB(dbName, dbversion, storeName, {"id":fileName, 'csv':response.body}, 1) //use fileName as id
             this.model.ecg = Papa.parse(response.body).data.map(parseFloat)
             this.plotECG()
+        })
+    }
+
+    loadEDF(fileId, fileName){ //load EDF file to the indexedDB
+        this.model.dbName = "edfDB"
+        this.model.storeName = "edfStore"
+        let dbversion = this.model.dbversion
+        let view = this.view
+        console.log('loadEDF')
+        gapi.client.drive.files.get({
+            fileId: fileId,
+            alt: 'media'
+        }).then(function (response) {
+            view.showLoading.style.display = 'none' 
+            putDataToDB(dbName, dbversion, storeName, {"id":fileName, 'edf':response.body}, 1) //use fileName as id
+            //......
+            //......
+            // this.plotECG()
         })
     }
 

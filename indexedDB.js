@@ -26,7 +26,7 @@ function initIndexedDB(dbName, storeName, version){
 } 
 
 
-function putCSVToDB(dbName, version, storeName, data, key){
+function putDataToDB(dbName, version, storeName, data, key){
     console.log('addCSVToDB',dbName, version, storeName)
     const request = indexedDB.open(dbName, version);
 
@@ -62,7 +62,7 @@ function putCSVToDB(dbName, version, storeName, data, key){
 
 }
 
-function getCSVFromDB(dbName, storeName, version, id){
+function getDataFromDB(dbName, storeName, version, id){
     console.log('getCSVToDB',dbName, version, storeName)
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(dbName, version);
@@ -106,4 +106,4 @@ function getCSVFromDB(dbName, storeName, version, id){
 }
 
 
-export {initIndexedDB, putCSVToDB, getCSVFromDB}
+export {initIndexedDB, putDataToDB, getDataFromDB}
